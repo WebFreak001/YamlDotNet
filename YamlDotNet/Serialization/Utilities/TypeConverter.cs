@@ -197,8 +197,9 @@ namespace YamlDotNet.Serialization.Utilities
                 foreach (var method in type.GetPublicStaticMethods())
                 {
                     var isCastingOperator =
-                        method.IsSpecialName &&
-                        (method.Name == "op_Implicit" || method.Name == "op_Explicit") &&
+                        (method.IsSpecialName &&
+                            (method.Name == "op_Implicit" || method.Name == "op_Explicit")
+                        || method.Name == "YamlConvert") &&
                         destinationType.IsAssignableFrom(method.ReturnParameter.ParameterType);
 
                     if (isCastingOperator)
