@@ -352,6 +352,11 @@ namespace YamlDotNet
             return type.GetMethod(name, BindingFlags.Public | BindingFlags.Instance);
         }
 
+        public static MethodInfo? GetPublicInstanceMethod(this Type type, string name, params Type[] parameterTypes)
+        {
+            return type.GetMethod(name, BindingFlags.Public | BindingFlags.Instance, null, parameterTypes, null);
+        }
+
         private static readonly FieldInfo? remoteStackTraceField = typeof(Exception)
                 .GetField("_remoteStackTraceString", BindingFlags.Instance | BindingFlags.NonPublic);
 

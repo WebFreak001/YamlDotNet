@@ -177,6 +177,56 @@ namespace YamlDotNet.Serialization.Utilities
                 }
             }
 
+            // Construct from static destination create method
+            var constructMethod = destinationType.GetMethod("YamlConstruct", BindingFlags.Public | BindingFlags.Static);
+            if (constructMethod != null)
+            {
+                var parameters = constructMethod.GetParameters();
+                if (parameters.Length == 1 && parameters[0].ParameterType.IsAssignableFrom(sourceType))
+                {
+                    try
+                    {
+                        return constructMethod.Invoke(null, new object[] { value });
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+                        throw ex.Unwrap();
+                    }
+                }
+            }
+
+            // Construct from inherited static destination create method
+            constructMethod = destinationType.GetMethod("YamlConstruct", BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            if (constructMethod != null)
+            {
+                var parameters = constructMethod.GetParameters();
+                if (parameters.Length == 2 && parameters[0].ParameterType.IsAssignableFrom(sourceType) && parameters[1].ParameterType == typeof(Type))
+                {
+                    try
+                    {
+                        return constructMethod.Invoke(null, new object[] { value, destinationType });
+                    }
+                    catch (TargetInvocationException ex)
+                    {
+                        throw ex.Unwrap();
+                    }
+                }
+            }
+
+            // Convert from instance to generic type
+            var convertMethod = sourceType.GetPublicInstanceMethod("YamlConvert", typeof(Type));
+            if (convertMethod != null)
+            {
+                try
+                {
+                    return convertMethod.Invoke(value, new object[] { destinationType });
+                }
+                catch (TargetInvocationException ex)
+                {
+                    throw ex.Unwrap();
+                }
+            }
+
             // Try with the source type's converter
             var sourceConverter = TypeDescriptor.GetConverter(sourceType);
             if (sourceConverter != null && sourceConverter.CanConvertTo(destinationType))
