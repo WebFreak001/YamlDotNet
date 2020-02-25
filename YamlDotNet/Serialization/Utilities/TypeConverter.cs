@@ -255,8 +255,16 @@ namespace YamlDotNet.Serialization.Utilities
                 return TimeSpan.Parse((string)ChangeType(value, typeof(string), CultureInfo.InvariantCulture)!);
             }
 
-            // Default to the Convert class
-            return Convert.ChangeType(value, destinationType, CultureInfo.InvariantCulture);
+            try
+            {
+                // Default to the Convert class
+                return Convert.ChangeType(value, destinationType, CultureInfo.InvariantCulture);
+            }
+            catch (InvalidCastException e)
+            {
+                throw new InvalidCastException("Failed converting from type "
+                    + sourceType + " to type " + destinationType, e);
+            }
         }
     }
 }
